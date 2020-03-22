@@ -1,0 +1,24 @@
+server:
+  port: 8100
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_manager
+    username: postgres
+    password: thewhite80
+  jpa:
+    hibernate:
+      ddl-auto: update
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    default-property-inclusion: non_null
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+
+jwt:
+  secret: secret
+  lifetimeMilliseconds: 18000000
+
+api:
+  prefix:
+    v1: /api/user-manager/v1
