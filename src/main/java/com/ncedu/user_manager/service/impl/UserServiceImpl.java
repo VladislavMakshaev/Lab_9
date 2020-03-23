@@ -5,14 +5,17 @@ import com.ncedu.user_manager.model.dto.LoginPasswordDTO;
 import com.ncedu.user_manager.model.dto.NewUserDTO;
 import com.ncedu.user_manager.model.dto.TokenDTO;
 import com.ncedu.user_manager.model.dto.UserDTO;
+import com.ncedu.user_manager.model.entity.RoleEntity;
 import com.ncedu.user_manager.model.entity.UserEntity;
 import com.ncedu.user_manager.model.security.UserPrincipal;
+import com.ncedu.user_manager.repository.RoleRepository;
 import com.ncedu.user_manager.repository.UserRepository;
 import com.ncedu.user_manager.service.error.Error;
 import com.ncedu.user_manager.service.UserService;
 import com.ncedu.user_manager.service.converter.UserConverter;
 import com.ncedu.user_manager.util.OffsetBasedPageRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,11 +29,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    private final UserConverter userConverter;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JWTTokenService tokenService;
+    @Autowired
+    private UserConverter userConverter;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private JWTTokenService tokenService;
 
     @Override
     public UserDTO create(NewUserDTO newUserDTO) {
@@ -61,7 +69,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(UUID id) {
-        throw new UnsupportedOperationException(); //TODO implement
+        UserEntity user = userRepository.findById(id).orElseThrow(
+                () -> new BaseException(Error.USER_WITH_PROVIDED_LOGIN_ALREADY_EXISTS)
+        );
+        userRepository.delete(user);
     }
 
     @Override
@@ -159,12 +170,25 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO addRoles(UUID id, List<String> roleCodes) {
-        throw new UnsupportedOperationException(); //TODO implement
+        UserEntity userEntity = userRepository.findLockedById(id).get();
+        for (String role: roleCodes) {
+            RoleEntity roleEntity = roleRepository.findByCode(role).get();
+            userEntity.getRoles().add(roleEntity);
+        }
+        userRepository.save(userEntity);
+        return userConverter.toDTO(userEntity);
     }
 
     @Override
     @Transactional
     public UserDTO removeRoles(UUID id, List<String> roleCodes) {
-        throw new UnsupportedOperationException(); //TODO implement
+        UserEntity userEntity = userRepository.findLockedById(id).get();
+        for (String role: roleCodes) {
+            RoleEntity roleEntity = roleRepository.findByCode(role).get();
+            userEntity.getRoles().remove(roleEntity);
+        }
+
+        userRepository.delete(userEntity);
+        return userConverter.toDTO(userEntity);
     }
 }

@@ -7,6 +7,7 @@ import com.ncedu.user_manager.util.OffsetBasedPageRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
     @ApiOperation(httpMethod = "GET", value = "Find users")
     @GetMapping
@@ -46,24 +48,21 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_ADMIN')")
     public void delete(@PathVariable UUID id) {
-        throw new UnsupportedOperationException();
-        //TODO implement
+        userService.delete(id);
     }
 
     @ApiOperation(httpMethod = "POST", value = "Add roles to user")
     @PostMapping("/{id}/addRoles")
     @PreAuthorize("hasAuthority('USER_ADMIN')")
     public UserDTO addRoles(@PathVariable UUID id, @RequestBody List<String> roleCodes) {
-        throw new UnsupportedOperationException();
-        //TODO implement
+        return userService.addRoles(id,roleCodes);
     }
 
     @ApiOperation(httpMethod = "POST", value = "Remove roles from user")
     @PostMapping("/{id}/removeRoles")
     @PreAuthorize("hasAuthority('USER_ADMIN')")
     public UserDTO removeRoles(@PathVariable UUID id, @RequestBody List<String> roleCodes) {
-        throw new UnsupportedOperationException();
-        //TODO implement
+        return userService.removeRoles(id, roleCodes);
     }
 
 }
